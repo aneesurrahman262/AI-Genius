@@ -1,1 +1,1 @@
-# AI-Genius
+# AI-Genius.io
