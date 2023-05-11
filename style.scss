@@ -4,3 +4,9 @@ $secondary-color: #YourColor;
 // Typography
 $heading-font: 'Your Font', sans-serif;
 $body-font: 'Your Font', sans-serif;
+@media screen and (max-width: 768px) {
+  /* Styles for screens smaller than 768px */
+  body {
+    font-size: 14px;
+  }
+}
