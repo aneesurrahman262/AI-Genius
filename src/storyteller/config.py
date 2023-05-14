@@ -1,11 +1,6 @@
-from dataclasses import dataclass
-
-import torch
-
-
 @dataclass
 class StoryTellerConfig:
-    max_new_tokens: int = 50
+    max_new_tokens: int = 100  # Increased token limit
     writer: str = "gpt2"
     painter: str = "stabilityai/stable-diffusion-2"
     speaker: str = "tts_models/en/ljspeech/glow-tts"
