@@ -1,53 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>StoryTeller</title>
-  <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file for custom styling -->
+  <title>Multimodal AI Story Teller</title>
+  <style>
+    /* Add your custom CSS styles here */
+    body {
+      font-family: Arial, sans-serif;
+    }
+    
+    h1 {
+      color: #FF0000;
+    }
+    
+    .form-container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: bold;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    
+    .form-button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .form-button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>StoryTeller</h1>
-    <p>A multimodal AI story teller, built with Stable Diffusion, GPT, and neural text-to-speech (TTS).</p>
-  </header>
-  
-  <section id="description">
-    <h2>Description</h2>
-    <p>
-      Given a prompt as an opening line of a story, GPT writes the rest of the plot; Stable Diffusion draws an image for each sentence;
-      a TTS model narrates each line, resulting in a fully animated video of a short story, replete with audio and visuals.
-    </p>
-    <img src="https://user-images.githubusercontent.com/25360440/210071764-51ed5872-ba56-4ed0-919b-d9ce65110185.gif" alt="out">
-  </section>
+  <h1>Multimodal AI Story Teller</h1>
+  <div class="form-container">
+    <form id="story-form">
+      <div class="form-group">
+        <label class="form-label" for="prompt">Enter a story prompt:</label>
+        <textarea class="form-input" id="prompt" rows="4" required></textarea>
+      </div>
+      <div class="form-group">
+        <button class="form-button" type="submit">Generate Story</button>
+      </div>
+    </form>
+    <div id="story-output"></div>
+  </div>
 
-  <section id="installation">
-    <h2>Installation</h2>
-    <h3>PyPI</h3>
-    <p>
-      Story Teller is available on <a href="https://pypi.org/project/storyteller-core/">PyPI</a>.
-    </p>
-    <pre><code>$ pip install storyteller-core</code></pre>
+  <script>
+    // Add your JavaScript code here
+    const form = document.getElementById('story-form');
+    const storyOutput = document.getElementById('story-output');
 
-    <h3>Source</h3>
-    <ol>
-      <li>Clone the repository.</li>
-      <pre><code>$ git clone https://github.com/jaketae/storyteller.git</code></pre>
-      <li>Install dependencies.</li>
-      <pre><code>$ pip install .</code></pre>
-      <p>Note: For Apple M1/2 users, <a href="https://github.com/SamuraiT/mecab-python3">mecab-python3</a> is not available. You need to install mecab before running pip install. You can do this with Hombrew via brew install mecab. For more information, refer to <a href="https://github.com/SamuraiT/mecab-python3/issues/84">this issue</a>.</p>
-      <li>(Optional) To develop locally, install dev dependencies and install pre-commit hooks. This will automatically trigger linting and code quality checks before each commit.</li>
-      <pre><code>$ pip install -e .[dev]
-$ pre-commit install</code></pre>
-    </ol>
-  </section>
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-  <section id="quickstart">
-    <h2>Quickstart</h2>
-    <p>The quickest way to run a demo is through the CLI. Simply type</p>
-    <pre><code>$ storyteller</code></pre>
-    <p>The final video will be saved as <code>/out/out.mp4</code>, alongside other intermediate images, audio files, and subtitles.</p>
-    <p>To adjust the defaults with custom parameters, toggle the CLI flags as needed.</p>
-    <pre><code>$ storyteller --help
-usage: storyteller [-h] [--writer_prompt WRITER_PROMPT]
-                   [--painter_prompt_prefix PAINTER_PROMPT_PREFIX] [--num_images NUM_IMAGES]
-                   [--output_dir OUTPUT_DIR] [--seed SEED] [--max_new_tokens MAX_NEW_TOKENS]
-                   [--writer
+      const prompt = document.getElementById('prompt').value;
+      
+      // Send the prompt to the server API and retrieve the generated story
+      const response = await fetch('/generate-story', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+      
+      const data = await response.json();
+      
+      // Display the generated story on the webpage
+      if (data.story) {
+        storyOutput.textContent = data.story;
+      } else {
+        storyOutput.textContent = 'Unable to generate the story. Please try again.';
+      }
+    });
+  </script>
+</body>
+</html>
