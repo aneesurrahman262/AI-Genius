@@ -69,8 +69,12 @@ class StoryTeller:
         self.output_dir = output_dir
         sentences = self.write_story(writer_prompt, num_images)
         for i, sentence in enumerate(sentences):
-            video_path = self._generate(i, sentence, painter_prompt_prefix)
-            video_paths.append(video_path)
+            try:
+                video_path = self._generate(i, sentence, painter_prompt_prefix)
+                video_paths.append(video_path)
+            except Exception as e:
+                # Handle any exceptions that occur during the generation process
+                print(f"Error generating video for sentence {i+1}: {str(e)}")
         self.concat_videos(video_paths)
 
     def concat_videos(self, video_paths: List[str]) -> None:
@@ -81,32 +85,4 @@ class StoryTeller:
                 f.write(f"file {os.path.split(video_path)[-1]}\n")
         subprocess_run(f"ffmpeg -f concat -i {files_path} -c copy {output_path}")
 
-    def _generate(self, id_: int, sentence: str, painter_prompt_prefix: str) -> str:
-        image_path = self.get_output_path(f"{id_}.png")
-        audio_path = self.get_output_path(f"{id_}.wav")
-        subtitle_path = self.get_output_path(f"{id_}.srt")
-        video_path = self.get_output_path(f"{id_}.mp4")
-        image = self.paint(f"{painter_prompt_prefix} {sentence}")
-        image.save(image_path)
-        audio = self.speak(sentence)
-        duration, remainder = divmod(len(audio), self.sample_rate)
-        if remainder:
-            duration += 1
-            audio.extend([0] * (self.sample_rate - remainder))
-        sf.write(audio_path, audio, self.sample_rate)
-        subtitle = f"0\n{make_timeline_string(0, duration)}\n{sentence}"
-        with open(subtitle_path, "w+") as f:
-            f.write(subtitle)
-        subprocess_run(
-            f"ffmpeg -loop 1 -i {image_path} -i {audio_path} -vf subtitles={subtitle_path} -tune stillimage -shortest {video_path}"
-        )
-        return video_path
-
-    def write_story(self, writer_prompt: str, num_sentences: int) -> List[str]:
-        sentences = []
-        while len(sentences) < num_sentences + 1:
-            writer_prompt = self.write(writer_prompt)
-            sentences = sent_tokenize(writer_prompt)
-        while len(sentences) > num_sentences:
-            sentences.pop()
-        return sentences
+    def _generate(self, id_: int, sentence: str, painter_prompt_prefix:
