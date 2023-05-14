@@ -38,29 +38,33 @@ def require_punkt(func):
     return wrapper_func
 
 
-def make_timeline_string(start, end):
+def make_timeline_string(start: float, end: float) -> str:
     """Create timeline string to write onto .srt subtitle files."""
     start = format_time(start)
     end = format_time(end)
     return f"{start} --> {end}"
 
 
-def format_time(time):
+def format_time(time: float) -> str:
     """Transform time (seconds) to .srt format."""
     mm, ss = divmod(time, 60)
     hh, mm = divmod(mm, 60)
     return f"{hh:02d}:{mm:02d}:{ss:02d},000"
 
 
-def subprocess_run(command):
+def subprocess_run(command: str) -> None:
     """Wrapper around `subprocess.run()` with /dev/null redirection in stdout and stderr."""
-    subprocess.run(
-        command.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-    )
+    try:
+        subprocess.run(
+            command.split(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+    except subprocess.SubprocessError as e:
+        # Handle any exceptions raised during subprocess execution
+        logging.error(f"Subprocess error: {str(e)}")
 
 
-def set_seed(seed):
-    """Set seed."""
+def set_seed(seed: int) -> None:
+    """Set seed for random number generators."""
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
@@ -70,5 +74,5 @@ def set_seed(seed):
 
 
 def set_log_level(level: int) -> None:
-    """Disables specified logging level and below."""
-    logging.disable(level)
+    """Set the log level for the root logger."""
+    logging.getLogger().setLevel(level)
