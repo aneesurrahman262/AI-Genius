@@ -1,4 +1,5 @@
 import os
+import logging
 from typing import List
 
 import soundfile as sf
@@ -24,7 +25,7 @@ class StoryTeller:
     def __init__(self, config: StoryTellerConfig):
         self.config = config
         writer_device = torch.device(config.writer_device)
-        painter_device = torch.device(config.writer_device)
+        painter_device = torch.device(config.painter_device)
         self.writer = pipeline(
             "text-generation", model=config.writer, device=writer_device
         )
@@ -63,10 +64,10 @@ class StoryTeller:
         writer_prompt: str,
         painter_prompt_prefix: str,
         num_images: int,
-        output_dir: str,
+        output_directory: str,
     ) -> None:
         video_paths = []
-        self.output_dir = output_dir
+        self.output_dir = output_directory
         sentences = self.write_story(writer_prompt, num_images)
         for i, sentence in enumerate(sentences):
             video_path = self._generate(i, sentence, painter_prompt_prefix)
@@ -93,20 +94,4 @@ class StoryTeller:
         if remainder:
             duration += 1
             audio.extend([0] * (self.sample_rate - remainder))
-        sf.write(audio_path, audio, self.sample_rate)
-        subtitle = f"0\n{make_timeline_string(0, duration)}\n{sentence}"
-        with open(subtitle_path, "w+") as f:
-            f.write(subtitle)
-        subprocess_run(
-            f"ffmpeg -loop 1 -i {image_path} -i {audio_path} -vf subtitles={subtitle_path} -tune stillimage -shortest {video_path}"
-        )
-        return video_path
-
-    def write_story(self, writer_prompt: str, num_sentences: int) -> List[str]:
-        sentences = []
-        while len(sentences) < num_sentences + 1:
-            writer_prompt = self.write(writer_prompt)
-            sentences = sent_tokenize(writer_prompt)
-        while len(sentences) > num_sentences:
-            sentences.pop()
-        return sentences
+        sf.write(audio_path, audio, self.sample_rate
